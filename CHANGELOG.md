@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## Unreleased
 
+### Maintenance
+- Widened Pi peer dependency ranges to support Pi 1.x. All 144 tests and the
+  typecheck pass with Pi 1.0.0; the minimum supported Pi remains 0.85.1.
+
 ## [0.7.0] - 2026-09-30
 
 Requires Pi 0.85.1 or newer. Tested with Pi 0.99.2.

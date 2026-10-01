@@ -23,7 +23,7 @@ A small [pi](https://github.com/earendil-works/pi-mono) extension that adds a `/
 
 ## Install
 
-pi-btw requires Pi 0.85.1 or newer.
+pi-btw supports Pi 0.85.1 through 1.x.
 
 Development dependencies target Pi 0.99.2. CI runs the tests and typecheck
 against the locked dependencies, Pi 0.85.1, and the latest published Pi release
