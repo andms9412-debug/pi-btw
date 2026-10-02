@@ -172,6 +172,7 @@ const BTW_CONTINUE_THREAD_USER_TEXT = "[The following is a separate side convers
 const BTW_CONTINUE_THREAD_ASSISTANT_TEXT = "Understood, continuing our side conversation.";
 
 type SessionThinkingLevel = "off" | AiThinkingLevel;
+const BTW_THINKING_LEVELS = ["off", "minimal", "low", "medium", "high", "xhigh", "max"] as const;
 type BtwThreadMode = "contextual" | "tangent" | "readonly";
 type SessionModel = NonNullable<ExtensionCommandContext["model"]>;
 /**
@@ -2388,6 +2389,19 @@ export default function (pi: ExtensionAPI) {
     if (name === "btw:thinking") {
       const parsed = parseBtwThinkingArgs(trimmedArgs);
       if (parsed.action === "show") {
+        if (ctx.hasUI) {
+          const choice = await ctx.ui.select(BTW_STRINGS.thinkingPickerTitle, [
+            ...BTW_THINKING_LEVELS,
+            BTW_STRINGS.thinkingPickerClear,
+          ]);
+          if (choice !== undefined) {
+            await setBtwThinkingOverride(
+              ctx,
+              choice === BTW_STRINGS.thinkingPickerClear ? null : (choice as SessionThinkingLevel),
+            );
+            return true;
+          }
+        }
         const settings = await resolveBtwSettings(ctx);
         const message = describeResolvedThinking(settings);
         setOverlayStatus(message, ctx);

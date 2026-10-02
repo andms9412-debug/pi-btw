@@ -1412,6 +1412,15 @@ describe("btw runtime behavior", () => {
     expect(harness.notifications.at(-1)?.message).toContain(BTW_STRINGS.modelOverrideSet("fast-provider/fast-model (custom-api)"));
   });
 
+  it("opens a thinking picker for /btw:thinking without args and applies the choice", async () => {
+    const harness = createHarness();
+    harness.selectMock.mockResolvedValueOnce("low");
+
+    await harness.command("btw:thinking", "");
+
+    expect(harness.notifications.at(-1)?.message).toContain(BTW_STRINGS.thinkingOverrideSet("low"));
+  });
+
   it("reports inherited and overridden BTW settings from the read-only commands", async () => {
     const harness = createHarness();
     harness.setMainThinkingLevel("high");

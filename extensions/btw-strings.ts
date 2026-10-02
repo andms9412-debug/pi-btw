@@ -24,6 +24,8 @@ export const BTW_STRINGS = {
   // Argument parsing / usage errors.
   modelUsage: "用法：/btw:model <provider> <model> <api> | clear",
   modelPickerTitle: "選擇 BTW 模型",
+  thinkingPickerTitle: "選擇 BTW 思考深度",
+  thinkingPickerClear: "清除覆寫（繼承主線程）",
 
   // Overlay transcript.
   emptyTranscript: "還沒有 BTW 話題。問個側聊問題開始吧。",
