@@ -9,6 +9,7 @@ import btwExtension, {
   isValidFocusShortcut,
   resolveBtwFocusShortcuts,
 } from "../extensions/btw";
+import { BTW_STRINGS } from "../extensions/btw-strings";
 
 const {
   promptStreamMock,
@@ -1112,7 +1113,7 @@ describe("btw runtime behavior", () => {
     expect(session.prompt).not.toHaveBeenCalled();
     expect(session.extensionRunner.emit).toHaveBeenCalledWith({ type: "session_shutdown", reason: "quit" });
     expect(session.dispose).toHaveBeenCalledTimes(1);
-    expect(harness.notifications.at(-1)).toMatchObject({ type: "error", message: expect.stringContaining("Could not start BTW session") });
+    expect(harness.notifications.at(-1)).toMatchObject({ type: "error", message: expect.stringContaining("無法啟動 BTW 話題") });
   });
 
   it("disposes a child whose extension loading finishes after /btw:clear", async () => {
@@ -1162,7 +1163,7 @@ describe("btw runtime behavior", () => {
     expect(createAgentSessionMock).toHaveBeenCalledTimes(1);
     expect(subSessionRecords[0]?.session.prompt).toHaveBeenCalledWith("credential-chain question", { source: "extension" });
     expect(getCustomEntries(harness.entries, "btw-thread-entry")).toHaveLength(1);
-    expect(harness.notifications.some((entry) => entry.message.includes("No credentials"))).toBe(false);
+    expect(harness.notifications.some((entry) => entry.message.includes("沒有可用憑證"))).toBe(false);
   });
 
   it("accepts header-based auth for a BTW model override", async () => {
@@ -1197,7 +1198,7 @@ describe("btw runtime behavior", () => {
 
     expect(createAgentSessionMock).toHaveBeenCalledTimes(2);
     expect(harness.sentUserMessages[0]?.content).toBe(
-      "Here is a summary of a side conversation I had. handoff this\n\nEnvironment-auth summary",
+      BTW_STRINGS.summaryWithInstructions("handoff this", "Environment-auth summary"),
     );
   });
 
@@ -1403,11 +1404,11 @@ describe("btw runtime behavior", () => {
 
     await harness.runSessionStart();
     await harness.command("btw:model", "");
-    expect(harness.notifications.at(-1)?.message).toContain("BTW model: test-provider/test-model (openai-responses) (inherits main thread).");
+    expect(harness.notifications.at(-1)?.message).toContain(BTW_STRINGS.modelDescription("test-provider/test-model (openai-responses)", BTW_STRINGS.modelSourceInheritsMain));
 
     await harness.command("btw:thinking", "");
     expect(harness.notifications.at(-1)).toEqual({
-      message: "BTW thinking: high (inherits main thread).",
+      message: BTW_STRINGS.thinkingDescription("high", BTW_STRINGS.thinkingSourceInheritsMain),
       type: "info",
     });
 
@@ -1415,11 +1416,11 @@ describe("btw runtime behavior", () => {
     await harness.command("btw:thinking", "low");
 
     await harness.command("btw:model", "");
-    expect(harness.notifications.at(-1)?.message).toContain("BTW model: fast-provider/fast-model (custom-api) (override).");
+    expect(harness.notifications.at(-1)?.message).toContain(BTW_STRINGS.modelDescription("fast-provider/fast-model (custom-api)", BTW_STRINGS.modelSourceOverride));
 
     await harness.command("btw:thinking", "");
     expect(harness.notifications.at(-1)).toEqual({
-      message: "BTW thinking: low (override).",
+      message: BTW_STRINGS.thinkingDescription("low", BTW_STRINGS.thinkingSourceOverride),
       type: "info",
     });
   });
@@ -1439,7 +1440,7 @@ describe("btw runtime behavior", () => {
     expect(
       harness.notifications.some((entry) =>
         entry.message.includes(
-          "Configured BTW model fast-provider/fast-model (custom-api) has no credentials. Falling back to main model test-provider/test-model (openai-responses).",
+          BTW_STRINGS.modelFallbackWithMain("fast-provider/fast-model (custom-api)", "test-provider/test-model (openai-responses)"),
         ),
       ),
     ).toBe(true);
@@ -1552,7 +1553,7 @@ describe("btw runtime behavior", () => {
     expect(record.session.prompt).toHaveBeenCalledWith("read-only question", { source: "extension" });
 
     const overlay = harness.latestOverlayComponent();
-    expect(overlay["modeText"].text).toContain("read-only");
+    expect(overlay["modeText"].text).toContain(BTW_STRINGS.overlayTitleReadonly);
     expect(getCustomEntries(harness.entries, "btw-thread-reset").at(-1)?.data).toMatchObject({ mode: "readonly" });
   });
 
@@ -1627,7 +1628,7 @@ describe("btw runtime behavior", () => {
     expect(records[3].session.dispose).not.toHaveBeenCalled();
 
     const overlay = harness.latestOverlayComponent();
-    expect(overlay["modeText"].text).toContain("BTW tangent");
+    expect(overlay["modeText"].text).toContain(BTW_STRINGS.overlayTitleTangent);
     const resets = getCustomEntries(harness.entries, "btw-thread-reset");
     expect(resets.map((entry) => (entry.data as any)?.mode)).toEqual(["readonly", "contextual", "tangent"]);
   });
@@ -1646,8 +1647,8 @@ describe("btw runtime behavior", () => {
     await restoredHarness.command("btw:ask", "");
 
     const overlay = restoredHarness.latestOverlayComponent();
-    expect(overlay["modeText"].text).toContain("read-only");
-    expect(transcriptText(overlay)).toContain("You  read-only question");
+    expect(overlay["modeText"].text).toContain(BTW_STRINGS.overlayTitleReadonly);
+    expect(transcriptText(overlay)).toContain(`${BTW_STRINGS.badgeYou}  read-only question`);
     expect(createAgentSessionMock.mock.calls.at(-1)?.[0].tools).toEqual(["read", "grep", "find", "ls"]);
     expect(getCustomEntries(restoredHarness.entries, "btw-thread-reset")).toHaveLength(1);
   });
@@ -1663,7 +1664,7 @@ describe("btw runtime behavior", () => {
     expect(harness.sentMessages[0]).toEqual({
       message: expect.objectContaining({
         customType: "btw-note",
-        content: "**Question**\n\nsaved read-only question\n\n**Answer**\n\nSaved answer",
+        content: BTW_STRINGS.noteContent("saved read-only question", "Saved answer"),
       }),
       options: undefined,
     });
@@ -1679,7 +1680,7 @@ describe("btw runtime behavior", () => {
 
     expect(harness.overlays).toHaveLength(1);
     const overlay = harness.latestOverlayComponent();
-    expect(overlay["modeText"].text).toContain("read-only");
+    expect(overlay["modeText"].text).toContain(BTW_STRINGS.overlayTitleReadonly);
     expect(createAgentSessionMock.mock.calls.at(-1)?.[0].tools).toEqual(["read", "grep", "find", "ls"]);
     const resets = getCustomEntries(harness.entries, "btw-thread-reset");
     expect(resets).toHaveLength(1);
@@ -1703,10 +1704,10 @@ describe("btw runtime behavior", () => {
     expect(resets).toHaveLength(1);
     expect(resets.at(-1)?.data).toMatchObject({ mode: "readonly" });
     expect(subSessionRecords.at(-1)?.options.tools).toEqual(["read", "grep", "find", "ls"]);
-    expect(overlay["modeText"].text).toContain("read-only");
+    expect(overlay["modeText"].text).toContain(BTW_STRINGS.overlayTitleReadonly);
     const transcript = transcriptText(overlay);
-    expect(transcript).toContain("You  read-only follow-up");
-    expect(transcript).not.toContain("You  first question");
+    expect(transcript).toContain(`${BTW_STRINGS.badgeYou}  read-only follow-up`);
+    expect(transcript).not.toContain(`${BTW_STRINGS.badgeYou}  first question`);
   });
 
   it("preserves BTW overlay recoverability after agent prompt failure", async () => {
@@ -1728,7 +1729,7 @@ describe("btw runtime behavior", () => {
     await harness.command("btw", "broken question");
 
     const overlay = harness.latestOverlayComponent();
-    expect(overlay.statusText.text).toContain("Request failed. Thread preserved for retry or follow-up.");
+    expect(overlay.statusText.text).toContain(BTW_STRINGS.requestFailedRetry);
     expect(transcriptText(overlay)).toContain("❌ Sub-session prompt exploded");
     expect(harness.notifications.at(-1)).toEqual({
       message: "Sub-session prompt exploded",
@@ -1741,7 +1742,7 @@ describe("btw runtime behavior", () => {
 
     expect(getCustomEntries(harness.entries, "btw-thread-entry")).toHaveLength(1);
     expect(transcriptText(overlay)).toContain("Recovered answer");
-    expect(overlay.statusText.text).toContain("Ready for a follow-up. Hidden BTW thread updated.");
+    expect(overlay.statusText.text).toContain(BTW_STRINGS.readyForFollowUp);
   });
 
   it("subscribes to the BTW sub-session as soon as the overlay opens", async () => {
@@ -1816,7 +1817,7 @@ describe("btw runtime behavior", () => {
     await flushAsyncWork();
 
     const overlay = harness.latestOverlayComponent();
-    expect(overlay.statusText.text).toContain("running tool: read");
+    expect(overlay.statusText.text).toContain(BTW_STRINGS.runningTool("read"));
 
     const firstRecord = subSessionRecords[0];
     expect(firstRecord).toBeDefined();
@@ -1831,7 +1832,7 @@ describe("btw runtime behavior", () => {
     expect(firstRecord.session.dispose).not.toHaveBeenCalled();
     expect(firstRecord.getListenerCount()).toBe(1);
     expect(harness.overlayHandles.at(-1)?.hideCalls).toBe(0);
-    expect(overlay.statusText.text).toContain("Press Esc again to dismiss");
+    expect(overlay.statusText.text).toContain("再按一次 Esc 關閉");
 
     // The aborted request settles without persisting a completed exchange, while
     // its partial user/tool transcript remains readable.
@@ -1883,7 +1884,7 @@ describe("btw runtime behavior", () => {
       text: "Partial answer",
       streaming: false,
     });
-    expect(overlay.summaryText.text).toContain("0 exchanges");
+    expect(overlay.summaryText.text).toContain(BTW_STRINGS.summaryExchanges(0));
     expect(getCustomEntries(harness.entries, "btw-thread-entry")).toHaveLength(0);
   });
 
@@ -1989,7 +1990,7 @@ describe("btw runtime behavior", () => {
     overlay.input.onEscape?.();
     await flushAsyncWork();
     expect(record.getIsStreaming()).toBe(true);
-    expect(overlay.statusText.text).toContain("Aborting");
+    expect(overlay.statusText.text).toContain("中斷");
 
     overlay.input.onEscape?.();
     await flushAsyncWork();
@@ -2022,7 +2023,7 @@ describe("btw runtime behavior", () => {
       await flushAsyncWork();
 
       expect(harness.sentUserMessages).toHaveLength(0);
-      expect(harness.notifications.some((entry) => entry.message.includes("No BTW thread"))).toBe(false);
+      expect(harness.notifications.some((entry) => entry.message.includes("沒有可"))).toBe(false);
 
       blocking.release();
       await pendingTurn;
@@ -2121,7 +2122,7 @@ describe("btw runtime behavior", () => {
 
     const record = subSessionRecords[0];
     expect(record.getIsStreaming()).toBe(true);
-    expect(overlay.statusText.text).toContain("running tool: read");
+    expect(overlay.statusText.text).toContain(BTW_STRINGS.runningTool("read"));
     expect(harness.baseCtx.isIdle()).toBe(true);
 
     const mainTurn = harness.startMainSessionInput("continue the main task");
@@ -2137,7 +2138,7 @@ describe("btw runtime behavior", () => {
     await flushAsyncWork();
 
     expect(record.getIsStreaming()).toBe(false);
-    expect(overlay.statusText.text).toContain("Ready for a follow-up");
+    expect(overlay.statusText.text).toContain(BTW_STRINGS.readyForFollowUp);
     expect(getCustomEntries(harness.entries, "btw-thread-entry")).toHaveLength(1);
     expect(transcriptText(overlay)).toContain("Long-running answer");
 
@@ -2186,7 +2187,7 @@ describe("btw runtime behavior", () => {
     await harness.command("btw", "");
     const reopened = harness.latestOverlayComponent();
     expect(transcriptEntries(reopened)).toEqual([]);
-    expect(transcriptText(reopened)).toContain("No BTW thread yet. Ask a side question to start one.");
+    expect(transcriptText(reopened)).toContain(BTW_STRINGS.emptyTranscript);
   });
 
   it("keeps the thread after Escape dismissal and restores it on reopen", async () => {
@@ -2213,10 +2214,10 @@ describe("btw runtime behavior", () => {
 
     const reopened = harness.latestOverlayComponent();
     const transcript = transcriptText(reopened);
-    expect(transcript).toContain("You  first question");
-    expect(transcript).toContain("Assistant");
+    expect(transcript).toContain(`${BTW_STRINGS.badgeYou}  first question`);
+    expect(transcript).toContain(BTW_STRINGS.badgeAssistant);
     expect(transcript).toContain("First answer");
-    expect(reopened.statusText.text).toContain("Ready for a follow-up");
+    expect(reopened.statusText.text).toContain(BTW_STRINGS.readyForFollowUp);
   });
 
   it("supports an in-place follow-up and preserves both turns in one thread", async () => {
@@ -2236,11 +2237,11 @@ describe("btw runtime behavior", () => {
     expect(threadEntries).toHaveLength(2);
 
     const transcript = transcriptText(overlay);
-    expect(transcript).toContain("You  first question");
+    expect(transcript).toContain(`${BTW_STRINGS.badgeYou}  first question`);
     expect(transcript).toContain("First answer");
-    expect(transcript).toContain("You  follow-up question");
+    expect(transcript).toContain(`${BTW_STRINGS.badgeYou}  follow-up question`);
     expect(transcript).toContain("Second answer");
-    expect(overlay.statusText.text).toContain("Ready for a follow-up");
+    expect(overlay.statusText.text).toContain(BTW_STRINGS.readyForFollowUp);
   });
 
   it("maps turn, tool, thinking, and assistant events into transcript entries", async () => {
@@ -2384,7 +2385,7 @@ describe("btw runtime behavior", () => {
       text: "❌ Sub-session prompt exploded",
       streaming: false,
     });
-    expect(overlay.statusText.text).toContain("Request failed. Thread preserved for retry or follow-up.");
+    expect(overlay.statusText.text).toContain(BTW_STRINGS.requestFailedRetry);
   });
 
   it("updates assistant transcript text incrementally while the BTW response streams", async () => {
@@ -2401,7 +2402,7 @@ describe("btw runtime behavior", () => {
       text: "Partial",
       streaming: true,
     });
-    expect(overlay.statusText.text).toContain("streaming");
+    expect(overlay.statusText.text).toContain("串流");
 
     blocking.release();
     await pendingCommand;
@@ -2410,7 +2411,7 @@ describe("btw runtime behavior", () => {
       text: "Partial answer",
       streaming: false,
     });
-    expect(overlay.statusText.text).toContain("Ready for a follow-up");
+    expect(overlay.statusText.text).toContain(BTW_STRINGS.readyForFollowUp);
   });
 
   it("clears the modal composer after a follow-up is submitted", async () => {
@@ -2506,8 +2507,8 @@ describe("btw runtime behavior", () => {
     const markdown = box.children[1];
     const rendered = markdown.render(56).join("\n");
 
-    expect(rendered).toContain("<bold>Question</bold>");
-    expect(rendered).toContain("<bold>Answer</bold>");
+    expect(rendered).toContain("<bold>問題</bold>");
+    expect(rendered).toContain("<bold>回應</bold>");
     expect(rendered).toContain("Saved note");
     expect(rendered).toContain("┌");
     expect(rendered).toContain("┘");
@@ -2524,9 +2525,9 @@ describe("btw runtime behavior", () => {
     expect(getCustomEntries(harness.entries, "btw-thread-entry")).toHaveLength(0);
     const overlay = harness.latestOverlayComponent();
     overlay.refresh();
-    expect(overlay.statusText.text).toContain("No credentials available for test-provider/test-model.");
+    expect(overlay.statusText.text).toContain(BTW_STRINGS.noUsableAuth("test-provider", "test-model"));
     expect(harness.notifications.at(-1)).toEqual({
-      message: "No credentials available for test-provider/test-model.",
+      message: BTW_STRINGS.noUsableAuth("test-provider", "test-model"),
       type: "error",
     });
   });
@@ -2544,7 +2545,7 @@ describe("btw runtime behavior", () => {
       message: expect.objectContaining({
         customType: "btw-note",
         display: true,
-        content: "**Question**\n\nrpc question\n\n**Answer**\n\nRPC answer",
+        content: BTW_STRINGS.noteContent("rpc question", "RPC answer"),
       }),
       options: undefined,
     });
@@ -2564,7 +2565,7 @@ describe("btw runtime behavior", () => {
       message: expect.objectContaining({
         customType: "btw-note",
         display: true,
-        content: "**Question**\n\nbusy question\n\n**Answer**\n\nBusy RPC answer",
+        content: BTW_STRINGS.noteContent("busy question", "Busy RPC answer"),
       }),
       options: { deliverAs: "followUp" },
     });
@@ -2596,7 +2597,7 @@ describe("btw runtime behavior", () => {
       expect(getCustomEntries(harness.entries, "btw-thread-entry")).toHaveLength(1);
       expect(getCustomEntries(harness.entries, "btw-thread-reset")).toHaveLength(0);
       expect(harness.notifications.at(-1)).toMatchObject({
-        message: expect.stringContaining("Pass the question inline instead."),
+        message: expect.stringContaining("請直接在指令後附上問題"),
         type: "warning",
       });
     });
@@ -2633,7 +2634,7 @@ describe("btw runtime behavior", () => {
 
     const overlay = harness.latestOverlayComponent();
     overlay.refresh();
-    expect(overlay.hintsText.text).toContain("Alt+w width");
+    expect(overlay.hintsText.text).toContain("Alt+w");
   });
 
   it("toggles the overlay between window and full-width layouts on Alt+w, preserving the draft", async () => {
@@ -2656,7 +2657,7 @@ describe("btw runtime behavior", () => {
     });
     const fullOverlay = harness.latestOverlayComponent();
     expect(fullOverlay.getDraft()).toBe("kept draft");
-    expect(fullOverlay.statusText.text).toContain("Full-width mode");
+    expect(fullOverlay.statusText.text).toContain("寬幅模式");
 
     // Alt+w again restores the framed window layout.
     await harness.shortcut("alt+w");
@@ -2668,7 +2669,7 @@ describe("btw runtime behavior", () => {
     });
     const windowOverlay = harness.latestOverlayComponent();
     expect(windowOverlay.getDraft()).toBe("kept draft");
-    expect(windowOverlay.statusText.text).toContain("Window mode");
+    expect(windowOverlay.statusText.text).toContain("視窗模式");
   });
 
   it("keeps the box frame in window mode but drops all border glyphs in full-width mode", async () => {
@@ -2841,7 +2842,7 @@ describe("btw runtime behavior", () => {
     await flushAsyncWork();
 
     const populatedLines = overlay.render(80);
-    const emptyStateLine = emptyLines.find((line: string) => line.includes("No BTW thread yet."));
+    const emptyStateLine = emptyLines.find((line: string) => line.includes("還沒有 BTW 話題。"));
     const inputLine = populatedLines.at(-3);
     const assistantBodyLine = populatedLines.find((line: string) => line.includes("First answer"));
 
@@ -2850,8 +2851,8 @@ describe("btw runtime behavior", () => {
     expect(emptyLines[0]).not.toContain("<fg:accent>┌");
     expect(emptyLines.at(-1)).toContain("<fg:border>└");
     expect(emptyLines.at(-1)).not.toContain("<fg:accent>└");
-    expect(emptyStateLine).toContain("<fg:border>│</fg:border><fg:dim>No BTW thread yet.");
-    expect(emptyStateLine).not.toContain("<fg:border>│</fg:border> <fg:dim>No BTW thread yet.");
+    expect(emptyStateLine).toContain("<fg:border>│</fg:border><fg:dim>還沒有 BTW 話題。");
+    expect(emptyStateLine).not.toContain("<fg:border>│</fg:border> <fg:dim>還沒有 BTW 話題。");
     expect(assistantBodyLine).toContain("<fg:border>│</fg:border>    First answer");
     expect(inputLine).toContain("<fg:border>│</fg:border>> ");
     expect(inputLine).not.toContain("\x1b_pi:c\x07");
@@ -2896,9 +2897,9 @@ describe("btw runtime behavior", () => {
 
     const postResetOverlay = harness.latestOverlayComponent();
     const postResetTranscript = transcriptText(postResetOverlay);
-    expect(postResetTranscript).not.toContain("You  first question");
+    expect(postResetTranscript).not.toContain(`${BTW_STRINGS.badgeYou}  first question`);
     expect(postResetTranscript).not.toContain("First answer");
-    expect(postResetTranscript).toContain("You  replacement question");
+    expect(postResetTranscript).toContain(`${BTW_STRINGS.badgeYou}  replacement question`);
     expect(postResetTranscript).toContain("Replacement answer");
 
     await harness.command("btw:new", "");
@@ -2912,8 +2913,8 @@ describe("btw runtime behavior", () => {
 
     const overlay = harness.latestOverlayComponent();
     const transcript = transcriptText(overlay);
-    expect(transcript).toContain("No BTW thread yet. Ask a side question to start one.");
-    expect(overlay.statusText.text).toContain("Started a fresh BTW thread.");
+    expect(transcript).toContain(BTW_STRINGS.emptyTranscript);
+    expect(overlay.statusText.text).toContain(BTW_STRINGS.startedFreshThread);
   });
 
   it("switching between /btw:tangent and /btw appends reset markers and tangent requests omit inherited main-session conversation", async () => {
@@ -2956,9 +2957,9 @@ describe("btw runtime behavior", () => {
 
     const overlay = harness.latestOverlayComponent();
     const transcript = transcriptText(overlay);
-    expect(transcript).toContain("You  contextual again");
+    expect(transcript).toContain(`${BTW_STRINGS.badgeYou}  contextual again`);
     expect(transcript).toContain("default:contextual again");
-    expect(transcript).not.toContain("You  tangent start");
+    expect(transcript).not.toContain(`${BTW_STRINGS.badgeYou}  tangent start`);
     expect(transcript).not.toContain("default:tangent start");
   });
 
@@ -2973,8 +2974,8 @@ describe("btw runtime behavior", () => {
     await harness.runEvent("session_start");
     await harness.command("btw", "");
     let overlay = harness.latestOverlayComponent();
-    expect(transcriptText(overlay)).toContain("You  new q");
-    expect(transcriptText(overlay)).not.toContain("You  old q");
+    expect(transcriptText(overlay)).toContain(`${BTW_STRINGS.badgeYou}  new q`);
+    expect(transcriptText(overlay)).not.toContain(`${BTW_STRINGS.badgeYou}  old q`);
 
     await harness.command("btw", "restore-visible");
     expect(harness.overlayHandles).toHaveLength(1);
@@ -2990,12 +2991,12 @@ describe("btw runtime behavior", () => {
     const resets = getCustomEntries(harness.entries, "btw-thread-reset");
     expect(resets).toHaveLength(resetCountBeforeClear + 1);
     expect(resets.at(-1)?.data).toMatchObject({ mode: "contextual" });
-    expect(harness.notifications.at(-1)).toEqual({ message: "Cleared BTW thread.", type: "info" });
+    expect(harness.notifications.at(-1)).toEqual({ message: BTW_STRINGS.clearedThread, type: "info" });
 
     await harness.runEvent("session_start");
     await harness.command("btw", "");
     overlay = harness.latestOverlayComponent();
-    expect(transcriptText(overlay)).toContain("No BTW thread yet. Ask a side question to start one.");
+    expect(transcriptText(overlay)).toContain(BTW_STRINGS.emptyTranscript);
 
     harness.entries.push({
       type: "custom",
@@ -3007,9 +3008,9 @@ describe("btw runtime behavior", () => {
     await harness.command("btw", "");
     overlay = harness.latestOverlayComponent();
     const transcript = transcriptText(overlay);
-    expect(transcript).toContain("You  post-clear q");
+    expect(transcript).toContain(`${BTW_STRINGS.badgeYou}  post-clear q`);
     expect(transcript).toContain("post-clear a");
-    expect(transcript).not.toContain("You  new q");
+    expect(transcript).not.toContain(`${BTW_STRINGS.badgeYou}  new q`);
   });
 
   it("/btw:clear during active tool execution aborts the prompt, disposes the sub-session, and leaves no partial thread", async () => {
@@ -3024,7 +3025,7 @@ describe("btw runtime behavior", () => {
     const overlay = harness.latestOverlayComponent();
     const overlayHandle = harness.overlayHandles.at(-1);
     const activeRecord = subSessionRecords[0];
-    expect(overlay.statusText.text).toContain("running tool: read");
+    expect(overlay.statusText.text).toContain(BTW_STRINGS.runningTool("read"));
     expect(activeRecord.getIsStreaming()).toBe(true);
 
     await harness.command("btw:clear", "");
@@ -3036,7 +3037,7 @@ describe("btw runtime behavior", () => {
     expect(activeRecord.getIsStreaming()).toBe(false);
     expect(getCustomEntries(harness.entries, "btw-thread-entry")).toHaveLength(0);
     expect(getCustomEntries(harness.entries, "btw-thread-reset")).toHaveLength(1);
-    expect(harness.notifications.at(-1)).toEqual({ message: "Cleared BTW thread.", type: "info" });
+    expect(harness.notifications.at(-1)).toEqual({ message: BTW_STRINGS.clearedThread, type: "info" });
     expect(overlayHandle?.hideCalls).toBe(1);
 
     blocking.release();
@@ -3045,7 +3046,7 @@ describe("btw runtime behavior", () => {
     expect(getCustomEntries(harness.entries, "btw-thread-entry")).toHaveLength(0);
 
     await harness.command("btw", "");
-    expect(transcriptText(harness.latestOverlayComponent())).toContain("No BTW thread yet. Ask a side question to start one.");
+    expect(transcriptText(harness.latestOverlayComponent())).toContain(BTW_STRINGS.emptyTranscript);
   });
 
   it("restore behavior is consistent across session_start and session_tree", async () => {
@@ -3060,9 +3061,9 @@ describe("btw runtime behavior", () => {
       await harness.command("btw", "");
       const overlay = harness.latestOverlayComponent();
       const transcript = transcriptText(overlay);
-      expect(transcript).toContain("You  restored q");
+      expect(transcript).toContain(`${BTW_STRINGS.badgeYou}  restored q`);
       expect(transcript).toContain("restored a");
-      expect(overlay['modeText'].text).toContain("BTW tangent");
+      expect(overlay['modeText'].text).toContain(BTW_STRINGS.overlayTitleTangent);
     }
   });
 
@@ -3092,20 +3093,23 @@ describe("btw runtime behavior", () => {
     expect(harness.sentUserMessages).toHaveLength(1);
     expect(harness.sentUserMessages[0]).toEqual({
       content:
-        "Here is a side conversation I had. Use this as supporting context.\n\nUser: first question\nAssistant: First answer\n\n---\n\nUser: second question\nAssistant: Second answer",
+        BTW_STRINGS.handoffWithInstructions(
+          "Use this as supporting context.",
+          "使用者：first question\n助理：First answer\n\n---\n\n使用者：second question\n助理：Second answer",
+        ),
       options: undefined,
     });
     expect(getCustomEntries(harness.entries, "btw-thread-reset")).toHaveLength(1);
     expect(record.session.dispose).toHaveBeenCalledTimes(1);
     expect(overlayHandle?.hideCalls).toBe(1);
     expect(harness.notifications.at(-1)).toEqual({
-      message: "Injected BTW thread (2 exchanges).",
+      message: BTW_STRINGS.injectedThread(2),
       type: "info",
     });
 
     await harness.command("btw", "");
     const reopened = harness.latestOverlayComponent();
-    expect(transcriptText(reopened)).toContain("No BTW thread yet. Ask a side question to start one.");
+    expect(transcriptText(reopened)).toContain(BTW_STRINGS.emptyTranscript);
   });
 
   it("/btw:inject while the main session is busy delivers to the main session as a follow-up", async () => {
@@ -3120,7 +3124,7 @@ describe("btw runtime behavior", () => {
 
     expect(harness.sentUserMessages).toHaveLength(1);
     expect(harness.sentUserMessages[0]).toEqual({
-      content: "Here is a side conversation I had. Queue this behind the active turn.\n\nUser: busy question\nAssistant: Busy answer",
+      content: BTW_STRINGS.handoffWithInstructions("Queue this behind the active turn.", "使用者：busy question\n助理：Busy answer"),
       options: { deliverAs: "followUp" },
     });
   });
@@ -3142,10 +3146,10 @@ describe("btw runtime behavior", () => {
     expect(record.session.abort).not.toHaveBeenCalled();
     expect(record.getListenerCount()).toBe(1);
     expect(overlayHandle?.isHidden()).toBe(false);
-    expect(overlay.statusText.text).toContain("Ready. Enter submits; Escape dismisses without clearing.");
-    expect(transcriptText(overlay)).toContain("No BTW thread yet. Ask a side question to start one.");
+    expect(overlay.statusText.text).toContain(BTW_STRINGS.defaultStatus);
+    expect(transcriptText(overlay)).toContain(BTW_STRINGS.emptyTranscript);
     expect(harness.notifications.at(-1)).toEqual({
-      message: "No BTW thread to inject.",
+      message: BTW_STRINGS.noThreadToInject,
       type: "warning",
     });
   });
@@ -3156,7 +3160,7 @@ describe("btw runtime behavior", () => {
       .mockImplementationOnce(() => streamAnswer("First answer"))
       .mockImplementationOnce((_record: unknown, text: string) => {
         expect(text).toBe(
-          "User: first question\nAssistant: First answer\n\n---\n\nUser: second question\nAssistant: Second answer",
+          "使用者：first question\n助理：First answer\n\n---\n\n使用者：second question\n助理：Second answer",
         );
         return streamAnswer("Short summary");
       });
@@ -3184,11 +3188,11 @@ describe("btw runtime behavior", () => {
     expect(summaryRecord).toBeDefined();
     expect(summaryRecord.options.tools).toEqual([]);
     expect(summaryRecord.promptCalls[0]?.text).toBe(
-      "User: first question\nAssistant: First answer\n\n---\n\nUser: second question\nAssistant: Second answer",
+      "使用者：first question\n助理：First answer\n\n---\n\n使用者：second question\n助理：Second answer",
     );
     expect(harness.sentUserMessages).toHaveLength(1);
     expect(harness.sentUserMessages[0]).toEqual({
-      content: "Here is a summary of a side conversation I had. Hand this to the main agent.\n\nShort summary",
+      content: BTW_STRINGS.summaryWithInstructions("Hand this to the main agent.", "Short summary"),
       options: undefined,
     });
     expect(getCustomEntries(harness.entries, "btw-thread-reset")).toHaveLength(1);
@@ -3196,13 +3200,13 @@ describe("btw runtime behavior", () => {
     expect(summaryRecord.session.dispose).toHaveBeenCalledTimes(1);
     expect(overlayHandle?.hideCalls).toBe(1);
     expect(harness.notifications.at(-1)).toEqual({
-      message: "Injected BTW summary (2 exchanges).",
+      message: BTW_STRINGS.injectedSummary(2),
       type: "info",
     });
 
     await harness.command("btw", "");
     const reopened = harness.latestOverlayComponent();
-    expect(transcriptText(reopened)).toContain("No BTW thread yet. Ask a side question to start one.");
+    expect(transcriptText(reopened)).toContain(BTW_STRINGS.emptyTranscript);
   });
 
   it("summarize failure preserves BTW thread state and keeps the overlay recoverable", async () => {
@@ -3234,8 +3238,8 @@ describe("btw runtime behavior", () => {
 
     const overlay = harness.latestOverlayComponent();
     overlay.refresh();
-    expect(overlay.statusText.text).toContain("Summarize failed. Thread preserved for retry or injection.");
-    expect(transcriptText(overlay)).toContain("You  first question");
+    expect(overlay.statusText.text).toContain(BTW_STRINGS.summarizeFailed);
+    expect(transcriptText(overlay)).toContain(`${BTW_STRINGS.badgeYou}  first question`);
     expect(transcriptText(overlay)).toContain("First answer");
     expect(harness.notifications.at(-1)).toEqual({
       message: "Summary model exploded",
@@ -3261,9 +3265,9 @@ describe("btw runtime behavior", () => {
     expect(resets.at(-1)?.data).toMatchObject({ mode: "contextual" });
 
     const transcript = transcriptText(overlay);
-    expect(transcript).not.toContain("You  first question");
+    expect(transcript).not.toContain(`${BTW_STRINGS.badgeYou}  first question`);
     expect(transcript).not.toContain("First answer");
-    expect(transcript).toContain("You  replacement question");
+    expect(transcript).toContain(`${BTW_STRINGS.badgeYou}  replacement question`);
     expect(transcript).toContain("Replacement answer");
     expect(overlay['modeText'].text).toContain("BTW");
   });
@@ -3298,10 +3302,10 @@ describe("btw runtime behavior", () => {
     expect(tangentTexts).not.toContain("main session task");
 
     const transcript = transcriptText(overlay);
-    expect(transcript).toContain("You  tangent start");
+    expect(transcript).toContain(`${BTW_STRINGS.badgeYou}  tangent start`);
     expect(transcript).toContain("default:tangent start");
-    expect(transcript).not.toContain("You  contextual start");
-    expect(overlay['modeText'].text).toContain("BTW tangent");
+    expect(transcript).not.toContain(`${BTW_STRINGS.badgeYou}  contextual start`);
+    expect(overlay['modeText'].text).toContain(BTW_STRINGS.overlayTitleTangent);
   });
 
   it("in-modal /btw:inject reuses command semantics by handing off to the main session and dismissing the overlay", async () => {
@@ -3318,7 +3322,7 @@ describe("btw runtime behavior", () => {
 
     expect(harness.sentUserMessages).toHaveLength(1);
     expect(harness.sentUserMessages[0]).toEqual({
-      content: "Here is a side conversation I had. Use this in the main run.\n\nUser: first question\nAssistant: First answer",
+      content: BTW_STRINGS.handoffWithInstructions("Use this in the main run.", "使用者：first question\n助理：First answer"),
       options: undefined,
     });
     expect(getCustomEntries(harness.entries, "btw-thread-reset")).toHaveLength(1);
@@ -3352,8 +3356,8 @@ describe("btw runtime behavior", () => {
     expect(getCustomEntries(harness.entries, "btw-thread-reset")).toHaveLength(resetCountBefore);
     expect(getCustomEntries(harness.entries, "btw-thread-entry")).toHaveLength(2);
     expect(harness.notifications.some((entry) => entry.message.includes("Unsupported slash input in BTW"))).toBe(false);
-    expect(overlay.statusText.text).toContain("Ready for a follow-up");
-    expect(transcriptText(overlay)).toContain("You  /plan do something else");
+    expect(overlay.statusText.text).toContain(BTW_STRINGS.readyForFollowUp);
+    expect(transcriptText(overlay)).toContain(`${BTW_STRINGS.badgeYou}  /plan do something else`);
     expect(transcriptText(overlay)).toContain("Slash answer");
   });
 
@@ -3384,10 +3388,10 @@ describe("btw runtime behavior", () => {
     expect(getCustomEntries(harness.entries, "btw-thread-entry")).toHaveLength(1);
     expect(getCustomEntries(harness.entries, "btw-thread-reset")).toHaveLength(0);
     expect(harness.sentUserMessages).toHaveLength(0);
-    expect(overlay.statusText.text).toContain("Request failed. Thread preserved for retry or follow-up.");
-    expect(transcriptText(overlay)).toContain("You  first question");
+    expect(overlay.statusText.text).toContain(BTW_STRINGS.requestFailedRetry);
+    expect(transcriptText(overlay)).toContain(`${BTW_STRINGS.badgeYou}  first question`);
     expect(transcriptText(overlay)).toContain("First answer");
-    expect(transcriptText(overlay)).toContain("You  /plan fail loudly");
+    expect(transcriptText(overlay)).toContain(`${BTW_STRINGS.badgeYou}  /plan fail loudly`);
     expect(transcriptText(overlay)).toContain("❌ Slash dispatch exploded");
     expect(harness.notifications.at(-1)).toEqual({
       message: "Slash dispatch exploded",

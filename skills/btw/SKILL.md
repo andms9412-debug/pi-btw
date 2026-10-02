@@ -1,24 +1,24 @@
 ---
 name: btw
-description: Helps you use the /btw side-conversation workflow effectively. Use when you want to think in parallel, ask side questions without interrupting ongoing work, or inject a side thread back into the main agent.
+description: 協助你有效使用 /btw 側聊工作流程。當使用者想要並行思考、在不打斷目前工作的情況下提出側邊問題，或將側邊話題注入回主代理時使用。
 ---
 
 # BTW
 
-Use this skill when the user wants to work in parallel with the main agent instead of derailing the current turn.
+當使用者想要跟主代理並行工作，而不是打斷目前的回合時，使用這個 skill。
 
-## When to use BTW
+## 何時使用 BTW
 
-Prefer the BTW workflow when the user wants to:
+當使用者想要以下情況時，優先使用 BTW 工作流程：
 
-- ask a side question while the main agent keeps working
-- brainstorm or compare options without interrupting the current run
-- prepare a plan or summary before handing it back to the main agent
-- keep exploratory discussion out of the main transcript/context
+- 在主代理持續工作的同時提出一個側邊問題
+- 在不打斷目前執行的情況下發散思考或比較選項
+- 在把結果交還給主代理之前，先準備一份計畫或摘要
+- 讓探索性的討論不要混進主要的對話記錄/上下文中
 
-## Commands
+## 指令
 
-Use these commands in your guidance to the user:
+在對使用者的引導中使用這些指令：
 
 ```text
 /btw <question>
@@ -36,163 +36,163 @@ Use these commands in your guidance to the user:
 /btw:summarize [instructions]
 ```
 
-`/side` is an alias for `/btw` and shares the same thread, overlay, and settings. `/btw` is canonical; the lifecycle commands stay in the `/btw:*` namespace.
+`/side` 是 `/btw` 的別名，共用同一個話題、視窗與設定。`/btw` 是正式指令；生命週期相關指令則統一放在 `/btw:*` 命名空間下。
 
-## How to guide the user
+## 如何引導使用者
 
-### For a quick side question
+### 快速側邊問題
 
-Recommend:
+建議：
 
 ```text
 /btw <question>
 ```
 
-Use this when the user wants an immediate aside and does not need a visible saved note.
+當使用者想要立即得到一個側邊回應，且不需要保存成可見的筆記時使用。
 
-Users coming from Codex may reach for `/side` instead; it is an alias for `/btw` and can be used anywhere `/btw` is used.
+從 Codex 轉過來的使用者可能會習慣用 `/side`；它是 `/btw` 的別名，任何用得到 `/btw` 的地方都能替換使用。
 
-### For a saved one-off note
+### 保存為單次筆記
 
-Recommend:
+建議：
 
 ```text
 /btw --save <question>
 ```
 
-Use this when the user wants the exchange to appear as a visible BTW note in the session transcript.
+當使用者想要讓這次對話以可見的 BTW 筆記形式出現在會話記錄中時使用。
 
-### For a fresh side thread
+### 開始一個全新的側邊話題
 
-Recommend:
+建議：
 
 ```text
 /btw:new
 ```
 
-or
+或
 
 ```text
 /btw:new <question>
 ```
 
-Use this when the previous BTW discussion is no longer relevant, but you still want the new side thread to inherit the current main-session context.
+當之前的 BTW 討論已經不相關，但你仍想讓新的側邊話題繼承目前主線程的上下文時使用。
 
-### For a contextless tangent thread
+### 開始一個不帶上下文的支線話題
 
-Recommend:
+建議：
 
 ```text
 /btw:tangent <question>
 ```
 
-or
+或
 
 ```text
 /btw:tangent --save <question>
 ```
 
-Use this when the user wants a side conversation that does not include the current main-session context.
+當使用者想要一個完全不包含目前主線程上下文的側邊對話時使用。
 
-### For an enforced read-only side question
+### 強制只讀的側邊問題
 
-Recommend:
+建議：
 
 ```text
 /btw:ask <question>
 ```
 
-or
+或
 
 ```text
 /btw:ask --save <question>
 ```
 
-Use this when the user wants a side question that inherits the current main-session context but must not be able to change anything. The read-only thread only has `read`, `grep`, `find`, and `ls`; it never has `bash`, `edit`, or `write`.
+當使用者想要一個繼承目前主線程上下文、但絕對不能更動任何東西的側邊問題時使用。這個只讀話題只會提供 `read`、`grep`、`find` 和 `ls`；絕對不會有 `bash`、`edit` 或 `write`。
 
-### To hand the full thread back to the main agent
+### 把完整話題交還給主代理
 
-Recommend:
+建議：
 
 ```text
 /btw:inject <instructions>
 ```
 
-Use this when the exact discussion matters and the user wants the main agent to act on it.
+當確切的討論內容很重要，且使用者希望主代理依據這些內容採取行動時使用。
 
-### To hand back a condensed version
+### 交還精簡版本
 
-Recommend:
+建議：
 
 ```text
 /btw:summarize <instructions>
 ```
 
-Use this when the thread is long and only the distilled outcome should go back into the main agent.
+當話題很長，而且只需要把濃縮後的結論交還給主代理時使用。
 
-### To make BTW cheaper or faster than the main thread
+### 讓 BTW 比主線程更省成本或更快速
 
-Recommend:
+建議：
 
 ```text
 /btw:model <provider> <model> <api>
 /btw:thinking <level>
 ```
 
-Use these when the main thread should keep its current model or thinking level, but BTW should run with a different cost/speed profile.
+當主線程需要維持目前的模型或思考深度，但 BTW 想用不同的成本/速度設定運行時使用。
 
-## Recommendation rules
+## 建議規則
 
-- Prefer `/btw` over normal chat when the user explicitly wants a side conversation.
-- Prefer `/btw:tangent` when the user wants that side conversation to be contextless.
-- Prefer `/btw:ask` when the user wants a side conversation that cannot modify the workspace.
-- Prefer `/btw:summarize` over `/btw:inject` for long exploratory threads.
-- Prefer `/btw:inject` when precise wording, detailed tradeoffs, or a full plan matters.
-- Suggest `/btw:new` before starting a totally unrelated side topic when main-session context is still useful.
-- Suggest `/btw:clear` when the widget/thread should be dismissed.
-- Suggest `/btw:model` or `/btw:thinking` when the user wants BTW to be cheaper, faster, or less deliberative than the main thread.
+- 當使用者明確想要側邊對話時，優先使用 `/btw` 而非一般聊天。
+- 當使用者想要那個側邊對話不帶上下文時，優先使用 `/btw:tangent`。
+- 當使用者想要一個不能修改工作區的側邊對話時，優先使用 `/btw:ask`。
+- 對於較長的探索性話題，優先使用 `/btw:summarize` 而非 `/btw:inject`。
+- 當精確的用詞、詳細的取捨或完整計畫很重要時，優先使用 `/btw:inject`。
+- 在開始一個完全不相關的新側邊話題之前，如果主線程上下文仍然有用，建議先使用 `/btw:new`。
+- 當該小工具/話題應該被關閉時，建議使用 `/btw:clear`。
+- 當使用者希望 BTW 比主線程更省成本、更快速或思考程度更低時，建議使用 `/btw:model` 或 `/btw:thinking`。
 
-## Response style
+## 回應風格
 
-When helping the user use BTW:
+在協助使用者使用 BTW 時：
 
-- give the exact slash command to run
-- explain briefly why that command fits
-- keep the guidance short and operational
+- 給出要執行的確切斜線指令
+- 簡短說明為什麼這個指令合適
+- 保持引導內容簡短且可直接操作
 
-## Examples
+## 範例
 
-### Example: brainstorm while coding continues
+### 範例：在編碼持續進行的同時發散思考
 
 ```text
 /btw what are the risks of switching this to optimistic updates?
 ```
 
-### Example: create a clean new thread
+### 範例：建立一個乾淨的新話題
 
 ```text
 /btw:new sketch a safer migration plan
 ```
 
-### Example: start a contextless tangent
+### 範例：開始一個不帶上下文的支線話題
 
 ```text
 /btw:tangent think through this from first principles without using the current chat context
 ```
 
-### Example: ask a read-only side question
+### 範例：提出一個只讀的側邊問題
 
 ```text
 /btw:ask what does the token refresh path do without changing anything?
 ```
 
-### Example: send the result back
+### 範例：把結果傳回去
 
 ```text
 /btw:summarize implement the recommended migration plan
 ```
 
-### Example: make BTW cheaper than the main thread
+### 範例：讓 BTW 比主線程更省成本
 
 ```text
 /btw:model openai gpt-5-mini openai-responses

@@ -1,59 +1,59 @@
 # pi-btw
 
-A small [pi](https://github.com/earendil-works/pi-mono) extension that adds a `/btw` side conversation channel.
+一個小巧的 [pi](https://github.com/earendil-works/pi-mono) 擴充套件，新增一個 `/btw` 側聊頻道。
 
-`/btw` opens a real pi sub-session with coding-tool access, and it runs immediately even while the main agent is still busy.
+`/btw` 會打開一個真正具備程式工具存取權的 pi 子會話，即使主代理還在忙碌中也能立刻運作。
 
 ![BTW overlay example](docs/btw-overlay.png)
 
-## What it does
+## 功能
 
-- opens a parallel side conversation without interrupting the main run
-- runs that side conversation as a real pi sub-session with `read` / `bash` / `edit` / `write` tool access
-- keeps a continuous BTW thread by default
-- accepts `/side` as an alias for the `/btw` entry command
-- supports `/btw:tangent` for a contextless side thread that does not inherit the current main-session conversation
-- supports `/btw:ask` for a read-only side thread that inherits main-session context but exposes only `read` / `grep` / `find` / `ls`
-- opens a focused BTW modal shell with its own composer and transcript
-- keeps the BTW overlay open while you switch focus back to the main editor with `Alt+/`, `Super+/`, or `Ctrl+Alt+W` (all remappable)
-- keeps BTW thread entries out of the main agent's future context
-- supports BTW-only model and thinking overrides without changing the main thread settings
-- lets you inject the full thread, or a summary of it, back into the main agent
-- optionally saves an individual BTW exchange as a visible session note with `--save`
+- 在不打斷主執行流程的情況下，打開一個並行的側邊對話
+- 這個側邊對話會以真正的 pi 子會話運行，具備 `read` / `bash` / `edit` / `write` 工具存取權
+- 預設維持一個連續的 BTW 話題
+- 接受 `/side` 作為 `/btw` 進入指令的別名
+- 支援 `/btw:tangent`，用於不繼承目前主線程對話的無上下文側邊話題
+- 支援 `/btw:ask`，用於繼承主線程上下文、但只暴露 `read` / `grep` / `find` / `ls` 的只讀側邊話題
+- 打開一個專屬的 BTW 彈出視窗，擁有自己的輸入框與對話記錄
+- 用 `Alt+/`、`Super+/` 或 `Ctrl+Alt+W`（皆可重新綁定）切回主編輯器焦點時，BTW 視窗仍會保持開啟
+- 讓 BTW 話題紀錄不會進入主代理未來的上下文中
+- 支援僅限 BTW 使用的模型與思考深度覆寫設定，不影響主線程設定
+- 可以將完整話題，或是該話題的摘要，注入回主代理
+- 可選擇用 `--save` 將單次 BTW 交流保存為可見的會話筆記
 
-## Install
+## 安裝
 
-pi-btw supports Pi 0.85.1 through 1.x.
+pi-btw 支援 Pi 0.85.1 到 1.x 版本。
 
-Development dependencies target Pi 0.99.2. CI runs the tests and typecheck
-against the locked dependencies, Pi 0.85.1, and the latest published Pi release
-on each PR and weekly. Pi 0.99.2 requires Node.js 22.19.0 or newer.
+開發依賴目標為 Pi 0.99.2。CI 會在每個 PR 以及每週，針對鎖定的依賴版本、Pi
+0.85.1，以及最新發布的 Pi 版本執行測試與型別檢查。Pi 0.99.2 需要
+Node.js 22.19.0 或更新版本。
 
-### From npm (after publish)
+### 透過 npm 安裝（發布後）
 
 ```bash
 pi install npm:pi-btw
 ```
 
-### From git
+### 透過 git 安裝
 
 ```bash
 pi install git:github.com/dbachelder/pi-btw
 ```
 
-Then reload pi:
+然後重新載入 pi：
 
 ```text
 /reload
 ```
 
-### From a local checkout
+### 從本機路徑安裝
 
 ```bash
 pi install /absolute/path/to/pi-btw
 ```
 
-## Usage
+## 使用方式
 
 ```text
 /btw what file defines this route?
@@ -71,121 +71,121 @@ pi install /absolute/path/to/pi-btw
 /btw:clear
 ```
 
-## Commands
+## 指令
 
 ### `/btw [--save] <question>`
 
-- runs right away
-- works while pi is busy
-- creates or reuses a real BTW sub-session instead of a one-off completion call
-- continues the current BTW thread
-- opens or refreshes the focused BTW modal shell
-- streams into the BTW modal transcript/status surface
-- on RPC/SDK hosts, displays completed inline-question responses as visible session notes instead
-- composer-only `/btw` requires the TUI; pass the question inline on RPC/SDK hosts
-- persists the BTW exchange as hidden thread state
-- with `--save`, also saves that single exchange as a visible session note
+- 立即執行
+- 即使 pi 正在忙碌中也能運作
+- 建立或重用一個真正的 BTW 子會話，而不是臨時的單次補全呼叫
+- 延續目前的 BTW 話題
+- 打開或重新整理專屬的 BTW 彈出視窗
+- 將內容串流到 BTW 視窗的對話記錄/狀態介面中
+- 在 RPC/SDK 主機上，完成的行內提問回應會改以可見的會話筆記顯示
+- 僅用輸入框的 `/btw`（不帶問題文字）需要 TUI；在 RPC/SDK 主機上請直接把問題文字接在指令後面
+- 將這次 BTW 交流保存為隱藏的話題狀態
+- 加上 `--save` 的話，也會將這一次交流保存為可見的會話筆記
 
 ### `/side [--save] <question>`
 
-- alias for `/btw`, matching the equivalent command in Codex
-- shares the same thread, overlay, persistence, model, and thinking settings as `/btw`
-- `/btw` stays canonical; lifecycle commands remain under the `/btw:*` namespace, so there is no `/side:new` or `/side:clear`
+- `/btw` 的別名，對應 Codex 中的同等指令
+- 與 `/btw` 共用同一個話題、視窗、持久化紀錄、模型與思考深度設定
+- `/btw` 仍是正式指令；生命週期相關指令仍統一放在 `/btw:*` 命名空間下，因此沒有 `/side:new` 或 `/side:clear`
 
-## Overlay controls
+## 視窗控制
 
-- `Alt+w` toggles the overlay between the framed window layout (inset from the terminal edges) and a full-width layout
-- full-width mode makes terminal Shift+drag selection capture only the dialog's own text, which is handy for copying without pulling in surrounding main-screen content
-- window mode keeps the full box frame; full-width mode drops the side borders and corner glyphs (keeping only horizontal rules) so those border columns never land inside a drag selection
-- `Alt+/`, `Super+/`, or `Ctrl+Alt+W` toggles focus between BTW and the main editor without closing the overlay
-- `Super+/` requires a terminal that reports the Super modifier, typically through the Kitty keyboard protocol
-- `Ctrl+Alt+W` remains a fallback for terminals that do not deliver either primary shortcut
-- set the `PI_BTW_FOCUS_KEYS` environment variable to remap these when they conflict with your window manager or terminal
-- the value is a comma-separated list of pi-tui key identifiers such as `PI_BTW_FOCUS_KEYS="ctrl+/,ctrl+alt+b"`; it replaces the defaults entirely
-- identifiers combine `ctrl`, `shift`, `alt`, and `super` with a single base key (letter, digit, symbol, or named key like `enter`/`f5`); blank or invalid entries are ignored, and the defaults are kept if none are usable
-- while BTW is streaming, the first `Esc` aborts the request and keeps its partial transcript visible; press `Esc` again to dismiss
-- while BTW is idle, `Esc` dismisses the overlay immediately
-- BTW now opens top-centered so the main session remains visible underneath it
+- `Alt+w` 可以切換視窗在有框線的視窗版面（相對於終端機邊緣內縮）與寬幅版面之間
+- 寬幅模式下，終端機的 Shift+拖曳選取只會框選到對話框本身的文字，方便複製而不會夾帶周圍主畫面的內容
+- 視窗模式會保留完整的方框外框；寬幅模式則會移除左右邊框與角落字符（只保留水平分隔線），確保這些邊框欄位不會落在拖曳選取範圍內
+- `Alt+/`、`Super+/` 或 `Ctrl+Alt+W` 可以在 BTW 與主編輯器之間切換焦點，而不會關閉視窗
+- `Super+/` 需要終端機能回報 Super 修飾鍵，通常透過 Kitty 鍵盤協定才能支援
+- `Ctrl+Alt+W` 是給無法傳送上述任一主要快捷鍵的終端機使用的備援方案
+- 如果這些快捷鍵跟你的視窗管理器或終端機衝突，可以設定 `PI_BTW_FOCUS_KEYS` 環境變數重新對應
+- 這個值是逗號分隔的 pi-tui 鍵值識別字串列表，例如 `PI_BTW_FOCUS_KEYS="ctrl+/,ctrl+alt+b"`；它會完全取代預設值
+- 識別字串可以組合 `ctrl`、`shift`、`alt`、`super` 加上單一的基礎鍵（字母、數字、符號，或像 `enter`/`f5` 這種具名按鍵）；空白或無效的項目會被忽略，若沒有可用項目則保留預設值
+- 當 BTW 正在串流輸出時，第一次按 `Esc` 會中斷請求但保留部分對話記錄；再按一次 `Esc` 才會關閉視窗
+- 當 BTW 處於閒置狀態時，`Esc` 會立即關閉視窗
+- BTW 現在會從畫面上方居中位置打開，讓主會話在它下方仍保持可見
 
 ### `/btw:new [question]`
 
-- clears the current BTW thread
-- starts a fresh thread that still inherits the current main-session context
-- optionally asks the first question in the new thread immediately
-- if no question is provided, opens a fresh BTW modal ready for the next prompt
+- 清除目前的 BTW 話題
+- 開始一個全新的話題，但仍繼承目前主線程的上下文
+- 可選擇立即在新話題中提出第一個問題
+- 如果沒有提供問題，就打開一個全新的 BTW 視窗，等待下一個提問
 
 ### `/btw:tangent [--save] <question>`
 
-- starts or continues a contextless tangent thread
-- does not inherit the current main-session conversation
-- if you switch from `/btw` to `/btw:tangent` (or back), the previous side thread is cleared so the modes do not mix
-- opens or refreshes the same focused BTW modal shell
-- with `--save`, also saves that single exchange as a visible session note
+- 開始或延續一個無上下文的支線話題
+- 不會繼承目前主線程的對話
+- 如果你從 `/btw` 切換到 `/btw:tangent`（或反過來切換），之前的側邊話題會被清除，避免兩種模式混在一起
+- 打開或重新整理同一個專屬的 BTW 彈出視窗
+- 加上 `--save` 的話，也會將這一次交流保存為可見的會話筆記
 
 ### `/btw:ask [--save] <question>`
 
-- starts or continues an enforced read-only side thread
-- inherits the current main-session conversation, exactly like `/btw`
-- exposes only pi's built-in read-only tools (`read`, `grep`, `find`, `ls`); `bash`, `edit`, and `write` are never available to it
-- follows up read-only for the lifetime of the thread
-- identifies the thread as read-only in the overlay title
-- if you switch between `/btw`, `/btw:tangent`, and `/btw:ask`, the previous side thread is cleared and the child session is recreated so the capability boundary stays unambiguous
-- opens or refreshes the same focused BTW modal shell
-- with `--save`, also saves that single exchange as a visible session note
+- 開始或延續一個強制只讀的側邊話題
+- 跟 `/btw` 一樣繼承目前主線程的對話
+- 只暴露 pi 內建的只讀工具（`read`、`grep`、`find`、`ls`）；`bash`、`edit` 和 `write` 絕對不會提供給它
+- 整個話題的生命週期內都維持只讀
+- 視窗標題會標示該話題為只讀
+- 如果你在 `/btw`、`/btw:tangent` 和 `/btw:ask` 之間切換，之前的側邊話題會被清除，子會話也會重新建立，確保能力邊界不會混淆
+- 打開或重新整理同一個專屬的 BTW 彈出視窗
+- 加上 `--save` 的話，也會將這一次交流保存為可見的會話筆記
 
 ### `/btw:clear`
 
-- dismisses the BTW modal/widget
-- clears the current BTW thread
+- 關閉 BTW 視窗/小工具
+- 清除目前的 BTW 話題
 
 ### `/btw:inject [instructions]`
 
-- sends the full BTW thread back to the main agent as a user message
-- if pi is busy, queues it as a follow-up
-- clears the BTW thread after sending
+- 將完整的 BTW 話題以使用者訊息的形式送回主代理
+- 如果 pi 正在忙碌，會排入佇列作為後續訊息
+- 傳送後會清除 BTW 話題
 
 ### `/btw:summarize [instructions]`
 
-- summarizes the BTW thread with the current effective BTW model
-- always runs summarize with thinking off, even if BTW chat is using a thinking override
-- injects the summary into the main agent
-- if pi is busy, queues it as a follow-up
-- clears the BTW thread after sending
+- 用目前實際生效的 BTW 模型對話題進行摘要
+- 不論 BTW 對話本身是否使用思考深度覆寫，摘要時一律關閉思考模式
+- 將摘要注入回主代理
+- 如果 pi 正在忙碌，會排入佇列作為後續訊息
+- 傳送後會清除 BTW 話題
 
 ### `/btw:model [<provider> <model> <api> | clear]`
 
-- with no args, shows the current effective BTW model and whether it is inherited or overridden
-- with values, sets a BTW-only model override
-- `clear` removes the override and returns BTW to inheriting the main thread model
-- if the configured BTW model has no credentials, BTW warns and falls back to the main thread model
+- 不帶參數時，顯示目前實際生效的 BTW 模型，以及它是繼承而來還是被覆寫
+- 帶參數時，設定一個僅限 BTW 使用的模型覆寫
+- `clear` 會移除覆寫，讓 BTW 回到繼承主線程模型
+- 如果設定的 BTW 模型沒有可用憑證，BTW 會發出警告並改用主線程模型
 
 ### `/btw:thinking [<level> | clear]`
 
-- with no args, shows the current effective BTW thinking level and whether it is inherited or overridden
-- with a value, sets a BTW-only thinking override for normal BTW chat
-- `clear` removes the override and returns BTW to inheriting the main thread thinking level
-- changing `/btw:model` or `/btw:thinking` disposes the current BTW sub-session and applies the new settings on the next BTW prompt while preserving the hidden thread
+- 不帶參數時，顯示目前實際生效的 BTW 思考深度，以及它是繼承而來還是被覆寫
+- 帶參數時，為一般 BTW 對話設定一個僅限 BTW 使用的思考深度覆寫
+- `clear` 會移除覆寫，讓 BTW 回到繼承主線程思考深度
+- 更改 `/btw:model` 或 `/btw:thinking` 會釋放目前的 BTW 子會話，並在下一次 BTW 提問時套用新設定，同時保留隱藏話題
 
-## Behavior
+## 行為說明
 
-### Real sub-session model
+### 真正的子會話模型
 
-BTW is implemented as an actual pi sub-session with its own in-memory session state, transcript events, and tool surface.
+BTW 的實作是一個真正的 pi 子會話，擁有自己的記憶體內會話狀態、對話事件與工具介面。
 
-- contextual `/btw` threads seed that sub-session from the current main-session branch while filtering out BTW-visible notes from the parent context
-- `/btw:tangent` starts the same BTW UI in a contextless mode with no inherited main-session conversation
-- `/btw:ask` seeds the same main-session context as `/btw` but restricts the child session's tool surface to pi's read-only tools, so the boundary is structural rather than prompt-based
-- BTW can inherit the main thread model/thinking settings or use BTW-only overrides via `/btw:model` and `/btw:thinking`
-- `/btw:summarize` uses the current effective BTW model but keeps thinking off
-- the overlay transcript/status line is driven from sub-session events, so tool activity, streaming deltas, failures, and recovery are all visible without scraping rendered output
-- child prompts preserve the main session's instructions and append an authoritative list of their own tools; inherited tool/skill instructions and historical tool calls do not grant additional capabilities
-- handoff commands (`/btw:inject` and `/btw:summarize`) read from the BTW sub-session thread rather than maintaining a separate manual transcript model
+- 有上下文的 `/btw` 話題會從目前主線程分支初始化這個子會話，同時過濾掉父層上下文中僅供 BTW 使用的筆記
+- `/btw:tangent` 會以無上下文模式啟動同一套 BTW 介面，不繼承任何主線程對話
+- `/btw:ask` 會跟 `/btw` 一樣繼承主線程上下文，但會把子會話的工具介面限制為 pi 的只讀工具，所以這個邊界是結構性的，不是靠提示詞約束
+- BTW 可以繼承主線程的模型/思考深度設定，也可以透過 `/btw:model` 和 `/btw:thinking` 使用僅限 BTW 的覆寫
+- `/btw:summarize` 使用目前實際生效的 BTW 模型，但一律關閉思考模式
+- 視窗的對話記錄/狀態列由子會話事件驅動，因此工具活動、串流增量、失敗與復原狀態都能直接呈現，不需要解析渲染後的畫面輸出
+- 子提問會保留主會話的指示，並額外附上一份具權威性的自身工具清單；繼承而來的工具/skill 指示與歷史工具呼叫都不會額外授予能力
+- 交接指令（`/btw:inject` 和 `/btw:summarize`）會從 BTW 子會話的話題中讀取內容，而不是另外維護一個獨立的手動對話模型
 
-### Opt-in extension tools
+### 選用的擴充工具
 
-BTW loads no extensions by default. To enable tools such as `web_search` and
-`fetch_content` in `/btw`, `/side`, and `/btw:tangent`, create
-`~/.pi/agent/btw.json` (or `btw.json` in your `PI_CODING_AGENT_DIR`):
+BTW 預設不會載入任何擴充套件。若要在 `/btw`、`/side` 和 `/btw:tangent`
+中啟用像 `web_search` 和 `fetch_content` 這類工具，請建立
+`~/.pi/agent/btw.json`（或在你的 `PI_CODING_AGENT_DIR` 中建立 `btw.json`）：
 
 ```json
 {
@@ -193,90 +193,88 @@ BTW loads no extensions by default. To enable tools such as `web_search` and
 }
 ```
 
-A trusted project's `.pi/btw.json` can override this list. Lists replace rather
-than merge; `{"extensions": []}` disables global BTW extensions for that
-project. An omitted `extensions` key inherits the global list. Untrusted
-projects do not contribute configuration. Config is read when a child session
-is created; use `/btw:clear` to apply changes to an existing thread.
+受信任的專案可以用自己的 `.pi/btw.json` 覆寫這份清單。清單是整份取代而非合併；
+`{"extensions": []}` 會停用該專案的全域 BTW 擴充套件。省略 `extensions`
+欄位則會繼承全域清單。不受信任的專案不會貢獻任何設定。設定會在建立子會話時讀取；
+請用 `/btw:clear` 來讓現有話題套用變更。
 
-Sources can be Pi `npm:` or `git:` packages, or local extension files/package
-directories. Local paths are relative to the config file's directory. Remote
-packages are resolved into a separate BTW cache under the agent directory's
-`btw/` folder and can be installed on first use. Pin a source version when you
-need reproducible behavior.
+來源可以是 Pi 的 `npm:` 或 `git:` 套件，或是本機的擴充檔案/套件目錄。
+本機路徑是相對於設定檔所在的目錄解析的。遠端套件會被解析到代理目錄下獨立的
+BTW 快取（`btw/` 資料夾）中，並可在第一次使用時安裝。若需要可重現的行為，
+請固定來源的版本號。
 
-Only listed sources are loaded. BTW runs their lifecycle handlers headlessly
-(`ctx.hasUI === false`) and exposes their tools alongside `read`, `bash`,
-`edit`, and `write`, including tools registered at startup. The capability
-note follows the child's active tools. Load/startup errors stop child creation
-and are reported with the failing source; clear, mode/model changes, and parent
-shutdown run extension cleanup before disposal.
+只會載入清單中列出的來源。BTW 會以無介面模式（`ctx.hasUI === false`）
+執行它們的生命週期處理器，並讓它們的工具與 `read`、`bash`、`edit`、`write`
+一起暴露出來，包括在啟動時註冊的工具。能力提示會依照子會話目前啟用的工具而定。
+載入/啟動時發生的錯誤會中止子會話建立，並回報是哪個來源失敗；清除、
+模式/模型變更，以及父層關閉時都會先執行擴充套件的清理流程才釋放資源。
 
-Choose extensions that support headless sessions. Tools requiring interactive
-dialogs (such as `ask_user`) need additional UI integration. BTW does not import
-extension skills, prompt templates, themes, widgets, or shortcuts into its UI.
-Extensions are trusted code, not sandboxed: separate package installs avoid
-sharing the parent's cached extension factory, but extensions may still use
-shared files or external services. A local source already registered by the
-parent is rejected; use an `npm:` or `git:` source for a separate install.
+請選擇支援無介面會話的擴充套件。需要互動對話框的工具（例如 `ask_user`）
+需要額外的 UI 整合才能運作。BTW 不會把擴充套件的 skill、提示範本、主題、
+widget 或快捷鍵帶入自己的介面中。擴充套件是受信任的程式碼，並非沙箱環境：
+分開安裝套件可以避免共用父層快取的擴充套件工廠，但擴充套件仍可能使用
+共用檔案或外部服務。如果本機來源已經被父層註冊過，會被拒絕使用；
+請改用 `npm:` 或 `git:` 來源進行獨立安裝。
 
-`/btw:ask` never reads this configuration or loads extension tools, so it retains
-its built-in read-only tool set. `/btw:summarize` remains tool-free. Extension
-configuration is machine/project configuration, not persisted in hidden
-conversation-history entries.
+`/btw:ask` 絕對不會讀取這份設定或載入擴充工具，因此會維持內建的只讀工具組。
+`/btw:summarize` 則維持完全不帶工具。擴充套件設定屬於機器/專案層級設定，
+不會保存在隱藏的對話歷史紀錄項目中。
 
-### In-modal slash behavior
+### 視窗內斜線指令行為
 
-Inside the BTW modal composer, slash handling is split at the BTW/session boundary:
+在 BTW 視窗的輸入框中，斜線指令的處理會依照 BTW/會話的界線區分：
 
-- `/btw:new`, `/btw:tangent`, `/btw:ask`, `/btw:clear`, `/btw:model`, `/btw:thinking`, `/btw:inject`, and `/btw:summarize` stay owned by BTW because they control BTW lifecycle, configuration, or handoff behavior
-- any other slash-prefixed input is routed through the BTW sub-session's normal `prompt()` path
-- this means ordinary pi slash commands like `/help` are handled by the sub-session instead of being rejected by a modal-only fallback
-- if the sub-session cannot handle a slash command, BTW surfaces the real sub-session failure through the transcript/status state instead of inventing an "unsupported slash input" warning
+- `/btw:new`、`/btw:tangent`、`/btw:ask`、`/btw:clear`、`/btw:model`、
+  `/btw:thinking`、`/btw:inject` 和 `/btw:summarize` 仍由 BTW 自身處理，
+  因為它們控制的是 BTW 的生命週期、設定或交接行為
+- 其他任何以斜線開頭的輸入，都會透過 BTW 子會話一般的 `prompt()` 路徑處理
+- 這意味著像 `/help` 這種一般的 pi 斜線指令，會由子會話處理，而不是被視窗專用的備援機制拒絕
+- 如果子會話無法處理某個斜線指令，BTW 會透過對話記錄/狀態呈現真正的子會話失敗訊息，
+  而不是自行捏造一個「不支援的斜線輸入」警告
 
-This keeps BTW-owned lifecycle commands explicit while giving the side conversation the same slash-command surface as the underlying sub-session.
+這樣可以讓 BTW 自身的生命週期指令維持明確，同時讓側邊對話擁有跟底層子會話相同的斜線指令能力。
 
-## Behavior
+## 行為說明
 
-### Hidden BTW thread state
+### 隱藏的 BTW 話題狀態
 
-BTW exchanges are persisted in the session as hidden custom entries so they:
+BTW 的交流內容會以隱藏的自訂項目形式保存在會話中，因此它們會：
 
-- survive reloads and restarts
-- rehydrate the BTW modal shell for the current branch
-- preserve whether the current side thread is a normal `/btw` thread, a contextless `/btw:tangent`, or a read-only `/btw:ask` thread
-- preserve the current BTW-only model and thinking overrides for that session history
-- stay out of the main agent's LLM context
+- 在重新載入與重啟後仍然保留
+- 針對目前分支還原 BTW 視窗的狀態
+- 保留目前側邊話題是一般 `/btw` 話題、無上下文的 `/btw:tangent`，還是只讀的 `/btw:ask` 話題
+- 保留該會話歷史對應的僅限 BTW 模型與思考深度覆寫設定
+- 不會進入主代理的 LLM 上下文中
 
-### Visible saved notes
+### 可見的保存筆記
 
-If you use `--save`, that one BTW exchange is also written as a visible custom message in the session transcript.
+如果你使用 `--save`，那一次 BTW 交流也會以可見的自訂訊息形式寫入會話的對話記錄中。
 
-## Why
+## 為什麼需要這個
 
-Sometimes you want to:
+有時候你會想要：
 
-- ask a clarifying question while the main agent keeps working
-- think through next steps without derailing the current turn
-- explore an idea, then inject it back once it's ready
+- 在主代理持續工作的同時提出一個澄清問題
+- 在不打斷目前回合的情況下思考下一步
+- 先探索一個想法，準備好之後再注入回去
 
-## Included skill
+## 內建的 skill
 
-This package also ships a small `btw` skill so pi can better recognize when a side-conversation workflow is appropriate.
+這個套件還附帶一個小巧的 `btw` skill，讓 pi 更能辨識出什麼時候適合使用側聊工作流程。
 
-It helps with discoverability and guidance, but it is not required for the extension itself to work.
+它有助於提升可發現性與引導效果，但並非擴充套件運作所必需。
 
-## Development
+## 開發
 
-The extension entrypoint is:
+擴充套件的進入點是：
 
 - `extensions/btw.ts`
 
-The included skill is:
+內建的 skill 位於：
 
 - `skills/btw/SKILL.md`
 
-To use it without installing:
+不安裝即可直接使用：
 
 ```bash
 pi -e /path/to/pi-btw
@@ -284,25 +282,33 @@ pi -e /path/to/pi-btw
 
 ## DeepSeek Harness
 
-pi-btw also runs unmodified on [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) through the [pi2dsh](https://github.com/weijiafu14/pi2dsh) compatibility bridge.
+pi-btw 也可以透過 [pi2dsh](https://github.com/weijiafu14/pi2dsh) 相容橋接套件，
+不經修改直接在 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 上運行。
 
-For DSH Web, install the **dsh-work-x** suite, which includes pi-btw, pi2dsh, a browser side-chat window, and other extensions:
+對於 DSH Web，請安裝 **dsh-work-x** 套件組，裡面包含了 pi-btw、pi2dsh、
+瀏覽器側邊聊天視窗，以及其他擴充套件：
 
 ```bash
 dsh plugin --profile web add dsh-work-x
 ```
 
-To install just the bridge and this extension instead:
+若只想單獨安裝橋接套件與這個擴充套件：
 
 ```bash
 dsh plugin --profile web add pi2dsh
 dsh plugin --profile web add pi-btw
 ```
 
-Restart DSH after installation, then use `/btw <question>` to start a side conversation. The suite presents it in a browser side-chat window backed by a native DSH child session. DSH uses hyphens for the command family: for example, `/btw:inject` becomes `/btw-inject`.
+安裝後重新啟動 DSH，然後使用 `/btw <question>` 開始一段側聊對話。
+這個套件組會以瀏覽器側邊聊天視窗呈現，背後由原生的 DSH 子會話支援。
+DSH 的指令家族使用連字號命名：例如 `/btw:inject` 會變成 `/btw-inject`。
 
-See the [DSH side-conversation guide](https://github.com/weijiafu14/pi2dsh/tree/main/examples/side-conversation) for CLI-only installation, usage, and screenshots, and the [versioned validation results](https://github.com/weijiafu14/pi2dsh/tree/main/community/release-0.25.1) for the tested releases. Report DSH integration problems to [pi2dsh](https://github.com/weijiafu14/pi2dsh/issues).
+CLI 專用的安裝、使用方式與截圖，請參考
+[DSH 側聊指南](https://github.com/weijiafu14/pi2dsh/tree/main/examples/side-conversation)；
+已測試過的版本結果，請參考
+[版本驗證結果](https://github.com/weijiafu14/pi2dsh/tree/main/community/release-0.25.1)。
+DSH 整合相關的問題請回報到 [pi2dsh](https://github.com/weijiafu14/pi2dsh/issues)。
 
-## License
+## 授權條款
 
 MIT
