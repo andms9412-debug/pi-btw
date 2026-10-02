@@ -23,6 +23,7 @@ export const BTW_STRINGS = {
 
   // Argument parsing / usage errors.
   modelUsage: "用法：/btw:model <provider> <model> <api> | clear",
+  modelPickerTitle: "選擇 BTW 模型",
 
   // Overlay transcript.
   emptyTranscript: "還沒有 BTW 話題。問個側聊問題開始吧。",
@@ -150,6 +151,6 @@ export const BTW_STRINGS = {
   cmdClear: "關閉 BTW 視窗/小工具並清除目前的話題。",
   cmdInject: "將完整的 BTW 話題以使用者訊息的形式注入回主線程。",
   cmdSummarize: "摘要 BTW 話題，然後將摘要注入回主線程。",
-  cmdModel: "顯示、設定或清除僅限 BTW 使用的模型備案。",
+  cmdModel: "顯示、設定或清除僅限 BTW 使用的模型備案。不帶引數時在交互式介面中會跣出選單。",
   cmdThinking: "顯示、設定或清除僅限 BTW 使用的思考深度備案。",
 } as const;

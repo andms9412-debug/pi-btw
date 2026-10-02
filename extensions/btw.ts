@@ -459,6 +459,33 @@ function formatModelRef(model: Pick<SessionModel, "provider" | "id" | "api">): s
 }
 
 /**
+ * Opens a selector listing every model with usable credentials, grouped by
+ * provider, and returns the chosen model. Returns undefined if the user
+ * cancels or if there is nothing selectable (e.g. no UI, or no available
+ * models), in which case callers should fall back to the text-based flow.
+ */
+async function pickBtwModel(ctx: ExtensionCommandContext): Promise<SessionModel | undefined> {
+  if (!ctx.hasUI) {
+    return undefined;
+  }
+  const available = ctx.modelRegistry.getAvailable();
+  if (available.length === 0) {
+    return undefined;
+  }
+  const sorted = [...available].sort((a, b) => {
+    const providerCompare = a.provider.localeCompare(b.provider);
+    return providerCompare !== 0 ? providerCompare : a.id.localeCompare(b.id);
+  });
+  const options = sorted.map((model) => formatModelRef(model));
+  const choice = await ctx.ui.select(BTW_STRINGS.modelPickerTitle, options);
+  if (choice === undefined) {
+    return undefined;
+  }
+  const index = options.indexOf(choice);
+  return index >= 0 ? sorted[index] : undefined;
+}
+
+/**
  * Tool surfaces keyed by BTW mode. Read-only mode exposes only pi's built-in
  * read-only tools so the child session cannot mutate the workspace; every other
  * mode matches pi's default coding-agent toolset (read/bash/edit/write).
@@ -2330,6 +2357,11 @@ export default function (pi: ExtensionAPI) {
       }
 
       if (parsed.action === "show") {
+        const picked = await pickBtwModel(ctx);
+        if (picked) {
+          await setBtwModelOverride(ctx, picked);
+          return true;
+        }
         const settings = await resolveBtwSettings(ctx);
         const message = describeResolvedModel(settings);
         setOverlayStatus(message, ctx);

@@ -591,6 +591,7 @@ function createHarness(
   // Models that ctx.modelRegistry.find(provider, id) should return for /btw:model resolution.
   // Tests that exercise overrides should call harness.registerModel(...) so the resolved
   // Model.api preserves the value the test cares about (otherwise we synthesize a default).
+  const selectMock = vi.fn(async (..._args: any[]): Promise<string | undefined> => undefined);
   const registeredModels = new Map<string, { provider: string; id: string; api: string }>();
   const registeredProviderConfigs = new Map<string, unknown>();
   const registeredNativeProviders = new Map<string, unknown>();
@@ -646,7 +647,7 @@ function createHarness(
     setTheme: () => ({ success: true }),
     getToolsExpanded: () => false,
     setToolsExpanded: () => {},
-    select: async () => undefined,
+    select: selectMock as any,
     confirm: async () => false,
     input: async () => undefined,
   };
@@ -724,6 +725,7 @@ function createHarness(
         }
         return hasCredentials;
       }),
+      getAvailable: vi.fn(() => [...registeredModels.values()]),
       // Resolve explicitly registered fixtures, falling back to the harness model shape.
       find: vi.fn((provider: string, id: string) => {
         const key = `${provider}/${id}`;
@@ -841,6 +843,7 @@ function createHarness(
     setCredentialSource(value: string | undefined) {
       credentialSource = value;
     },
+    selectMock,
     setMainThinkingLevel(value: string) {
       mainThinkingLevel = value;
     },
@@ -1396,6 +1399,17 @@ describe("btw runtime behavior", () => {
     const seedTexts = subSessionRecords[0].seedMessages.map((message) => (message.content[0] as any)?.text ?? "");
     expect(seedTexts).toContain("saved question");
     expect(seedTexts).toContain("saved answer");
+  });
+
+  it("opens a model picker for /btw:model without args and applies the choice", async () => {
+    const harness = await createHarness();
+    harness.registerModel("fast-provider", "fast-model", "custom-api");
+    harness.selectMock.mockResolvedValueOnce("fast-provider/fast-model (custom-api)");
+
+    await harness.command("btw:model", "");
+
+    expect(harness.selectMock).toHaveBeenCalledWith(BTW_STRINGS.modelPickerTitle, ["fast-provider/fast-model (custom-api)"]);
+    expect(harness.notifications.at(-1)?.message).toContain(BTW_STRINGS.modelOverrideSet("fast-provider/fast-model (custom-api)"));
   });
 
   it("reports inherited and overridden BTW settings from the read-only commands", async () => {
